@@ -3,7 +3,7 @@ Python script to get residues from a PROPKA output that have a pKa more or less 
 
 For example, if you wanted to find which residues are estimated to be protonated at pH 7.
 
-This can be used when setting up molecular dynamics simulations of a protein.
+This can be used for choosing protonation states when setting up molecular dynamics simulations of a protein.
 
 **Usage:** 
 
