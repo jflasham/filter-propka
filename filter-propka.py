@@ -23,10 +23,11 @@ def read_data(file_path):
             else:
                 # Split line into columns using multiple spaces as delimiter
                 columns = re.split(r'\s+', line.strip())
-                data.append(columns)
+                # Keep only the first 4 columns, ignore the rest
+                data.append(columns[:4])
 
     return data
-
+    
 def filter_dataframe(df, pka_threshold, resname_value=None, chain_value=None, output_file=None):
     with open(output_file, 'w') as output:
         residues_to_filter = ['ASP', 'GLU', 'HIS', 'LYS']
@@ -80,12 +81,13 @@ def main():
     output_file_name = output_name_parts
 
     # Read the data and create the original DataFrame
-    column_names = ["Resname", "Resid", "Chain", "pKa", "Model_pKa", "X"]  # Replace with your column names
+    column_names = ["Resname", "Resid", "Chain", "pKa"]
     data = read_data(args.file_path)
+
     df = pd.DataFrame(data, columns=column_names)
 
     # Remove the first row (header) and the last column
-    df = df.iloc[1:, :-1]
+    df = df.iloc[1:]
 
     # Call the function to filter the DataFrame for specified resname_value and chain_value
     filtered_df = filter_dataframe(df, args.pka_threshold, args.resname_value, args.chain_value, output_file=output_file_name)
