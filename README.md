@@ -10,8 +10,7 @@ This can be used for choosing protonation states when setting up molecular dynam
 filter-propka.py [-h] [--resname_value RESNAME_VALUE] [--chain_value CHAIN_VALUE] file_path pka_threshold
 
 
-**positional arguments:
-**
+**positional arguments:**
 
 **file_path**             Path to the PROPKA output file (.pka)
  
