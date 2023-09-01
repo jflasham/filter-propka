@@ -30,11 +30,12 @@ def read_data(file_path):
     
 def filter_dataframe(df, pka_threshold, resname_value=None, chain_value=None, output_file=None):
     with open(output_file, 'w') as output:
-        residues_to_filter = ['ASP', 'GLU', 'HIS', 'LYS']
-        if resname_value:
-            residues_to_filter = [resname_value]
+        if resname_value is None:
+            residues = ['ASP', 'GLU', 'HIS', 'LYS']  # Add more residues as needed
+        else:
+            residues = [resname_value]
 
-        for res in residues_to_filter:
+        for res in residues:
             if res in ['ASP', 'GLU', 'HIS']:
                 direction = '>'
                 filtered_df = df[(df['Resname'] == res) & (df['pKa'].astype(float) > pka_threshold)]
@@ -49,7 +50,7 @@ def filter_dataframe(df, pka_threshold, resname_value=None, chain_value=None, ou
                 filtered_df = filtered_df[filtered_df['Chain'] == chain_value]
 
             output.write(f"{res}: pKa {direction} {pka_threshold}\n")
-            output.write(f"{filtered_df}\n")
+            output.write(f"{filtered_df.to_string(index=False).lstrip()}\n")
             output.write("-----------\n")
 
     return filtered_df
