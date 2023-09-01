@@ -27,7 +27,7 @@ def read_data(file_path):
                 data.append(columns[:4])
 
     return data
-    
+
 def filter_dataframe(df, pka_threshold, resname_value=None, chain_value=None, output_file=None):
     with open(output_file, 'w') as output:
         if resname_value is None:
@@ -54,6 +54,64 @@ def filter_dataframe(df, pka_threshold, resname_value=None, chain_value=None, ou
             output.write("-----------\n")
 
     return filtered_df
+
+def process_output_file(output_file):
+    with open(output_file, 'r') as file:
+        lines = file.readlines()
+        i = 0
+        chain_output = {}  # Dictionary to store output for each chain
+
+        while i < len(lines):
+            line = lines[i].strip()
+
+            # Check if the line starts with the residue name (e.g., ASP, GLU, LYS)
+            if line.startswith("ASP:"):
+                residue = "ASPP"
+            elif line.startswith("GLU:"):
+                residue = "GLUP"
+            elif line.startswith("LYS:"):
+                residue = "LSN"
+            elif line.startswith("HIS:"):
+                residue = "HSP"
+            else:
+                i += 1
+                continue
+
+            # Iterate through the following lines for the residue
+            i += 1
+
+            # Skip the first line after the residue header
+            if i < len(lines) and lines[i].startswith("Resname"):
+                i += 1
+
+            while i < len(lines) and not lines[i].startswith("ASP:") and not lines[i].startswith("GLU:") and not lines[i].startswith("HIS:") and not lines[i].startswith("LYS:"):
+                parts = lines[i].strip().split()
+                if len(parts) == 4:
+                    chain = parts[2]  # Extract the chain name (e.g., A)
+                    resid = parts[1]  # Extract the residue ID (e.g., 67)
+
+                    # Create the desired output
+                    if residue == "HSP":
+                        output = f"mutate {resid} {residue}\n"
+                    else:
+                        output = f"patch {residue} CHA{chain}:{resid}\n"
+
+                    # Store the output in the dictionary, organized by chain
+                    if chain not in chain_output:
+                        chain_output[chain] = []
+                    chain_output[chain].append(output)
+
+                i += 1
+
+        # Define the output file name with "psfgen" prepended
+        output_file_name = "psfgen_" + output_file
+
+        # Write the output to the psfgen file
+        with open(output_file_name, 'w') as psfgen_file:
+            for chain, output_list in chain_output.items():
+                psfgen_file.write(f"\nChain {chain}:\n")  # Add a blank line before each chain
+                for output in output_list:
+                    psfgen_file.write(output)
 
 def main():
     parser = argparse.ArgumentParser(description="Filter pKa data from a PROPKA output file.")
@@ -93,6 +151,7 @@ def main():
     # Call the function to filter the DataFrame for specified resname_value and chain_value
     filtered_df = filter_dataframe(df, args.pka_threshold, args.resname_value, args.chain_value, output_file=output_file_name)
 
+    process_output_file(output_file_name)
 
 if __name__ == "__main__":
     main()
